@@ -520,6 +520,15 @@ public:
 
 		//use helper function that uses glm to create some transform matrices
 
+		if (CheckCollisionSkyBox(dog, sphere)) {
+			//cout << "colliding" << endl;
+			dog->pos = vec3(-0.2, -0.4, -0.5);
+			g_eye = vec3(0, 2, 4);
+			g_lookAt = vec3(0, 0, -4);
+			g_theta = -PI / 2;
+			g_phi = atan(-2.0f / 8.0f);
+		}
+
 		Model->pushMatrix();
 			Model->translate(vec3(1.7, -0.4, -0.5));
 			//Model->rotate(sTheta, vec3(0, 1, 0));
