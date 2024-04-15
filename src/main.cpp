@@ -544,6 +544,7 @@ public:
 
 		//use helper function that uses glm to create some transform matrices
 
+		//Add the bones
 		Model->pushMatrix();
 			Model->translate(vec3(1.7, -0.4, -0.5));
 			//Model->rotate(sTheta, vec3(0, 1, 0));
