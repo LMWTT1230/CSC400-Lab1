@@ -207,13 +207,13 @@ public:
 
 		//read in a load the texture
 		texture0 = make_shared<Texture>();
-  		texture0->setFilename(resourceDirectory + "/batGround.jpg");
+  		texture0->setFilename(resourceDirectory + "/flowers.jpg");
   		texture0->init();
   		texture0->setUnit(0);
   		texture0->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
   		texture1 = make_shared<Texture>();
-  		texture1->setFilename(resourceDirectory + "/skyBox/bottom.jpg");
+  		texture1->setFilename(resourceDirectory + "/skyBox/top.jpg");
   		texture1->init();
   		texture1->setUnit(1);
   		texture1->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
@@ -527,28 +527,61 @@ public:
 		SetView(prog);
 		glUniform3f(prog->getUniform("lightPos"), lightTrans, 2.0, 2.0);
 
-		Model->pushMatrix();
-			Model->loadIdentity();
-			Model->translate(vec3(-1.5, -1.25, 0));
-			Model->scale(vec3(1.5, 1.5, 1.5));
-			Model->rotate(0.5, vec3(0, 1, 0));
-			Model->rotate(-1.5, vec3(1, 0, 0));
-			Model->scale(vec3(0.01, 0.01, 0.01));
-			Model->translate(vec3(-100, -100, 0));
-			setModel(prog, Model);
-			SetMaterial(prog, batMaterial);
-			for (auto& mesh : batman) {
-				mesh->draw(prog);
-			}
-		Model->popMatrix();
+		// Model->pushMatrix();
+		// 	Model->loadIdentity();
+		// 	Model->translate(vec3(-1.5, -1.25, 0));
+		// 	Model->scale(vec3(1.5, 1.5, 1.5));
+		// 	Model->rotate(0.5, vec3(0, 1, 0));
+		// 	Model->rotate(-1.5, vec3(1, 0, 0));
+		// 	Model->scale(vec3(0.01, 0.01, 0.01));
+		// 	Model->translate(vec3(-100, -100, 0));
+		// 	setModel(prog, Model);
+		// 	SetMaterial(prog, batMaterial);
+		// 	for (auto& mesh : batman) {
+		// 		mesh->draw(prog);
+		// 	}
+		// Model->popMatrix();
 
 		//use helper function that uses glm to create some transform matrices
 
 		Model->pushMatrix();
 			Model->translate(vec3(1.7, -0.4, -0.5));
-			Model->rotate(sTheta, vec3(0, 1, 0));
+			//Model->rotate(sTheta, vec3(0, 1, 0));
 			Model->scale(vec3(2, 1.5, 1.5));
-			Model->translate(vec3(-0.31, 0, 0.6));
+			Model->translate(vec3(-2, 0, -4));
+			Model->rotate(-1.6, vec3(0, 0, 1));
+			setModel(prog, Model);
+			SetMaterial(prog, 1);
+			bone->draw(prog);
+		Model->popMatrix();
+
+		Model->pushMatrix();
+			Model->translate(vec3(1.7, -0.4, -0.5));
+			//Model->rotate(sTheta, vec3(0, 1, 0));
+			Model->scale(vec3(2, 1.5, 1.5));
+			Model->translate(vec3(2, 0, -2));
+			Model->rotate(-1.6, vec3(0, 0, 1));
+			setModel(prog, Model);
+			SetMaterial(prog, 1);
+			bone->draw(prog);
+		Model->popMatrix();
+
+		Model->pushMatrix();
+			Model->translate(vec3(1.7, -0.4, -0.5));
+			//Model->rotate(sTheta, vec3(0, 1, 0));
+			Model->scale(vec3(2, 1.5, 1.5));
+			Model->translate(vec3(-5, 0, 1));
+			Model->rotate(-1.6, vec3(0, 0, 1));
+			setModel(prog, Model);
+			SetMaterial(prog, 1);
+			bone->draw(prog);
+		Model->popMatrix();
+
+		Model->pushMatrix();
+			Model->translate(vec3(1.7, -0.4, -0.5));
+			//Model->rotate(sTheta, vec3(0, 1, 0));
+			Model->scale(vec3(2, 1.5, 1.5));
+			Model->translate(vec3(1, 0, 3));
 			Model->rotate(-1.6, vec3(0, 0, 1));
 			setModel(prog, Model);
 			SetMaterial(prog, 1);
@@ -557,23 +590,23 @@ public:
 
 		//use helper function that uses glm to create some transform matrices
 		//setModel(prog, vec3(1.7, -1.7, 0), sTheta, 0, 0.3);
-		Model->pushMatrix();
-			Model->translate(vec3(1.7, -0.4, -0.5));
-			Model->rotate(sTheta, vec3(0, 1, 0));
-			Model->scale(vec3(0.3, 0.3, 0.3));
-			setModel(prog, Model);
-			SetMaterial(prog, 2);
-			dog->draw(prog);
-		Model->popMatrix();
+		// Model->pushMatrix();
+		// 	Model->translate(vec3(1.7, -0.4, -0.5));
+		// 	Model->rotate(sTheta, vec3(0, 1, 0));
+		// 	Model->scale(vec3(0.3, 0.3, 0.3));
+		// 	setModel(prog, Model);
+		// 	SetMaterial(prog, 2);
+		// 	dog->draw(prog);
+		// Model->popMatrix();
 
-		Model->pushMatrix();
-			Model->translate(vec3(0, -1, 4));
-			Model->rotate(3, vec3(0, 1, 0));
-			Model->scale(vec3(7, 7, 7));
-			setModel(prog, Model);
-			SetMaterial(prog, 4);
-			bunny->draw(prog);
-		Model->popMatrix();
+		// Model->pushMatrix();
+		// 	Model->translate(vec3(0, -1, 4));
+		// 	Model->rotate(3, vec3(0, 1, 0));
+		// 	Model->scale(vec3(7, 7, 7));
+		// 	setModel(prog, Model);
+		// 	SetMaterial(prog, 4);
+		// 	bunny->draw(prog);
+		// Model->popMatrix();
 
 		prog->unbind();
 
