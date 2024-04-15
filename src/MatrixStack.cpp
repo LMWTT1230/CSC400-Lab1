@@ -1,7 +1,6 @@
 
 #include "MatrixStack.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include <stdio.h>
 
 static const int MaxMatrixSize = 100;
 

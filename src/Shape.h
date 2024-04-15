@@ -25,6 +25,9 @@ public:
 
 	glm::vec3 min = glm::vec3(0);
 	glm::vec3 max = glm::vec3(0);
+	glm::vec3 pos = glm::vec3(0);
+	glm::vec3 scale = glm::vec3(1);
+	bool Destroyed;
 
 private:
 
