@@ -204,13 +204,13 @@ public:
 
 		//read in a load the texture
 		texture0 = make_shared<Texture>();
-  		texture0->setFilename(resourceDirectory + "/batGround.jpg");
+  		texture0->setFilename(resourceDirectory + "/flowers.jpg");
   		texture0->init();
   		texture0->setUnit(0);
   		texture0->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
   		texture1 = make_shared<Texture>();
-  		texture1->setFilename(resourceDirectory + "/skyBox/bottom.jpg");
+  		texture1->setFilename(resourceDirectory + "/skyBox/top.jpg");
   		texture1->init();
   		texture1->setUnit(1);
   		texture1->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
@@ -519,16 +519,17 @@ public:
 		glUniform3f(prog->getUniform("lightPos"), lightTrans, 2.0, 2.0);
 
 		//use helper function that uses glm to create some transform matrices
-		//setModel(prog, vec3(1.7, -1.7, 0), sTheta, 0, 0.3);
-		
-		if (CheckCollisionSkyBox(dog, sphere)) {
-			//cout << "colliding" << endl;
-			dog->pos = vec3(-0.2, -0.4, -0.5);
-			g_eye = vec3(0, 2, 4);
-			g_lookAt = vec3(0, 0, -4);
-			g_theta = -PI / 2;
-		    g_phi = atan(-2.0f / 8.0f);
-		}
+
+		Model->pushMatrix();
+			Model->translate(vec3(1.7, -0.4, -0.5));
+			//Model->rotate(sTheta, vec3(0, 1, 0));
+			Model->scale(vec3(2, 1.5, 1.5));
+			Model->translate(vec3(-2, 0, -4));
+			Model->rotate(-1.6, vec3(0, 0, 1));
+			setModel(prog, Model);
+			SetMaterial(prog, 1);
+			bone->draw(prog);
+		Model->popMatrix();
 
 		Model->pushMatrix();
 			Model->translate(dog->pos);
