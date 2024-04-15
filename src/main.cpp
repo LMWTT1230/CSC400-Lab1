@@ -42,12 +42,9 @@ public:
 	std::shared_ptr<Program> texProg;
 
 	//our geometry
-	vector<shared_ptr<Shape>> batman;
-
 	shared_ptr<Shape> dog;
-	shared_ptr<Shape> bone;
-	shared_ptr<Shape> bunny;
 	shared_ptr<Shape> sphere;
+	shared_ptr<Shape> bone;
 
 	//global data for ground plane - direct load constant defined CPU data to GPU (not obj)
 	GLuint GrndBuffObj, GrndNorBuffObj, GrndTexBuffObj, GIndxBuffObj;
@@ -63,16 +60,16 @@ public:
 	float lightTrans = 0;
 
 	//camera
-	double g_theta, g_phi;
+	double g_theta;
+	double g_phi = atan(-2.0f / 8.0f);
 	vec3 view = vec3(0, 0, 1);
 	vec3 strafe = vec3(1, 0, 0);
-	vec3 g_eye = vec3(0, 1, 4);
-	vec3 g_lookAt = vec3(0, 1, -4);
+	vec3 g_eye = vec3(0, 2, 4);
+	vec3 g_lookAt = vec3(0, 0, -4);
+
 
 	Spline splinepath[2];
 	bool goCamera = false;
-	float sTheta = 0;
-	int batMaterial = 0;
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
@@ -92,37 +89,34 @@ public:
 		if (key == GLFW_KEY_G && action == GLFW_RELEASE) {
 			goCamera = !goCamera;
 		}
-		if (key == GLFW_KEY_M && action == GLFW_PRESS) {
-			if (batMaterial == 0) {
-				batMaterial = 3;
-			}
-			else {
-				batMaterial = 0;
-			}
-		}
+
 		const float cameraSpeed = 0.1f;
-		vec3 strafeVec = cameraSpeed * normalize(cross(view, vec3(0, 1, 0)));
-		vec3 dollyVec = cameraSpeed * view;
+		vec3 strafeVec = cameraSpeed * vec3(1, 0, 0);
+		vec3 dollyVec = cameraSpeed * vec3(0, 0, 1);
 		    if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
+			dog->pos -= dollyVec;
             g_eye -= dollyVec;
             g_lookAt -= dollyVec;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         {
+			dog->pos += dollyVec;
             g_eye += dollyVec;
             g_lookAt += dollyVec;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         {
-            g_eye += strafeVec;
-            g_lookAt += strafeVec;
+			dog->pos -= strafeVec;
+            g_eye -= strafeVec;
+            g_lookAt -= strafeVec;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         {
-            g_eye -= strafeVec;
-            g_lookAt -= strafeVec;
+			dog->pos += strafeVec;
+            g_eye += strafeVec;
+            g_lookAt += strafeVec;
         }
     }
 	}
@@ -146,8 +140,11 @@ public:
 
 		g_phi += PI * deltaY/ 100;
 
-		if (fabs(g_phi) > PI * 80 / 180) {
-			g_phi = g_phi > 0 ? PI * 80 / 180 : -PI * 80 / 180;
+		if (g_phi < -PI * 30 / 180) {
+			g_phi = -PI * 30 / 180;
+		}
+		else if (g_phi > atan(-2.0f / 8.0f) + PI * 10 / 180) {
+			g_phi = atan(-2.0f / 8.0f) + PI * 10 / 180;
 		}
 
 		view = -normalize(vec3(cos(g_phi) * cos(g_theta), sin(g_phi), cos(g_phi) * cos((PI / 2.0) - g_theta)));
@@ -226,32 +223,12 @@ public:
 
 	void initGeom(const std::string& resourceDirectory)
 	{
-		vector<tinyobj::shape_t> TOshapes;
-		vector<tinyobj::material_t> objMaterials1;
 		string errStr;
-		//load in the mesh and make the shape(s)
-		bool rc = tinyobj::LoadObj(TOshapes, objMaterials1, errStr, (resourceDirectory + "/batman.obj").c_str());
-
-		if (!rc) {
-			cerr << errStr << endl;
-		}
-		else {
-			//for now all our shapes will not have textures - change in later labs
-			//mesh = make_shared<Shape>(false);
-			for (int i = 0; i < TOshapes.size(); i++) {
-				shared_ptr<Shape> mesh = make_shared<Shape>();
-				mesh->createShape(TOshapes[i]);
-				mesh->measure();
-				mesh->init();
-				batman.push_back(mesh);
-			}
-
-		}
 
 		//load in another mesh and make the shape(s)
-		vector<tinyobj::shape_t> TOshapes2;
-		vector<tinyobj::material_t> objMaterials2;
-		rc = tinyobj::LoadObj(TOshapes2, objMaterials2, errStr, (resourceDirectory + "/dog.obj").c_str());
+		vector<tinyobj::shape_t> TOshapes1;
+		vector<tinyobj::material_t> objMaterials1;
+		bool rc = tinyobj::LoadObj(TOshapes1, objMaterials1, errStr, (resourceDirectory + "/dog.obj").c_str());
 
 		if (!rc) {
 			cerr << errStr << endl;
@@ -259,58 +236,48 @@ public:
 		else {
 			//for now all our shapes will not have textures - change in later labs
 			dog = make_shared<Shape>();
-			dog->createShape(TOshapes2[0]);
+			dog->createShape(TOshapes1[0]);
 			dog->measure();
 			dog->init();
+			dog->pos = vec3(-0.2, -0.4, -0.5);
+			dog->scale = vec3(0.3, 0.3, 0.3);
 		}
 
-
-		vector<tinyobj::shape_t> TOshapes3;
-		vector<tinyobj::material_t> objMaterials3;
-		rc = tinyobj::LoadObj(TOshapes3, objMaterials3, errStr, (resourceDirectory + "/bone.obj").c_str());
-
-		if (!rc) {
-			cerr << errStr << endl;
-		}
-		else {
-			//for now all our shapes will not have textures - change in later labs
-			bone = make_shared<Shape>();
-			bone->createShape(TOshapes3[0]);
-			bone->measure();
-			bone->init();
-		}
-
-		vector<tinyobj::shape_t> TOshapes4;
-		vector<tinyobj::material_t> objMaterials4;
-		rc = tinyobj::LoadObj(TOshapes4, objMaterials4, errStr, (resourceDirectory + "/bunnyNoNorm.obj").c_str());
-
-		if (!rc) {
-			cerr << errStr << endl;
-		}
-		else {
-			//for now all our shapes will not have textures - change in later labs
-			bunny = make_shared<Shape>();
-			bunny->createShape(TOshapes4[0]);
-			bunny->measure();
-			bunny->init();
-		}
-
-		vector<tinyobj::shape_t> TOshapes5;
-		vector<tinyobj::material_t> objMaterials5;
+		vector<tinyobj::shape_t> TOshapes2;
+		vector<tinyobj::material_t> objMaterials2;
 		//load in the mesh and make the shape(s)
-		rc = tinyobj::LoadObj(TOshapes5, objMaterials5, errStr, (resourceDirectory + "/sphereWTex.obj").c_str());
+		rc = tinyobj::LoadObj(TOshapes2, objMaterials2, errStr, (resourceDirectory + "/sphereWTex.obj").c_str());
 		if (!rc) {
 			cerr << errStr << endl;
 		}
 		else {
 			sphere = make_shared<Shape>();
-			sphere->createShape(TOshapes5[0]);
+			sphere->createShape(TOshapes2[0]);
 			sphere->measure();
 			sphere->init();
+			sphere->scale = vec3(10.0);
+		}
+
+		vector<tinyobj::shape_t> TOshapes3;
+		vector<tinyobj::material_t> objMaterials3;
+		//load in the mesh and make the shape(s)
+		rc = tinyobj::LoadObj(TOshapes3, objMaterials3, errStr, (resourceDirectory + "/bone.obj").c_str());
+		if (!rc) {
+			cerr << errStr << endl;
+		}
+		else {
+			bone = make_shared<Shape>();
+			bone->createShape(TOshapes3[0]);
+			bone->measure();
+			bone->init();
+			bone->pos = vec3(3, -0.5, -2);
+			bone->scale = vec3(4, 3, 3);
 		}
 
 		//code to load in the ground plane (CPU defined data passed to GPU)
 		initGround();
+
+
 	}
 
 	//directly pass quad for the ground to the GPU
@@ -478,6 +445,30 @@ public:
       }
    	}
 
+	bool CheckCollision(shared_ptr<Shape> one, shared_ptr<Shape> two) {
+		float expansionX = 3.0;
+		bool collisionX = one->pos.x + one->max.x * one->scale.x * expansionX >= two->pos.x + two->min.x * two->scale.x &&
+			two->pos.x + two->max.x * two->scale.x * expansionX >= one->pos.x + one->min.x * one->scale.x;
+		bool collisionY = one->pos.y + one->max.y * one->scale.y >= two->pos.y + two->min.y * two->scale.y &&
+			two->pos.y + two->max.y * two->scale.y >= one->pos.y + one->min.y * one->scale.y;
+		bool collisionZ = one->pos.z + one->max.z * one->scale.z >= two->pos.z + two->min.z * two->scale.z &&
+			two->pos.z + two->max.z * two->scale.z >= one->pos.z + one->min.z * one->scale.z;
+
+		return collisionX && collisionY && collisionZ;
+	}
+
+
+	bool CheckCollisionSkyBox(shared_ptr<Shape> obj, shared_ptr<Shape> skybox) {
+		bool collisionX = obj->pos.x + obj->max.x * obj->scale.x >= skybox->pos.x + skybox->max.x * skybox->scale.x ||
+			obj->pos.x + obj->min.x * obj->scale.x <= skybox->pos.x + skybox->min.x * skybox->scale.x;
+		bool collisionY = obj->pos.y + obj->max.y * obj->scale.y >= skybox->pos.y + skybox->max.y * skybox->scale.y ||
+			obj->pos.y + obj->min.y * obj->scale.y <= skybox->pos.y + skybox->min.y * skybox->scale.y;
+		bool collisionZ = obj->pos.z + obj->max.z * obj->scale.z >= skybox->pos.z + skybox->max.z * skybox->scale.z ||
+			obj->pos.z + obj->min.z * obj->scale.z <= skybox->pos.z + skybox->min.z * skybox->scale.z;
+
+		return collisionX || collisionY || collisionZ;
+	}
+
 	void render(float frametime) {
 		// Get current frame buffer size.
 		int width, height;
@@ -511,7 +502,7 @@ public:
 		texture1->bind(texProg->getUniform("Texture0"));
 		Model->pushMatrix();
 			Model->loadIdentity();
-			Model->scale(vec3(10.0));
+			Model->scale(sphere->scale);
 			setModel(texProg, Model);
 			sphere->draw(texProg);
 		Model->popMatrix();
@@ -527,58 +518,46 @@ public:
 		SetView(prog);
 		glUniform3f(prog->getUniform("lightPos"), lightTrans, 2.0, 2.0);
 
-		Model->pushMatrix();
-			Model->loadIdentity();
-			Model->translate(vec3(-1.5, -1.25, 0));
-			Model->scale(vec3(1.5, 1.5, 1.5));
-			Model->rotate(0.5, vec3(0, 1, 0));
-			Model->rotate(-1.5, vec3(1, 0, 0));
-			Model->scale(vec3(0.01, 0.01, 0.01));
-			Model->translate(vec3(-100, -100, 0));
-			setModel(prog, Model);
-			SetMaterial(prog, batMaterial);
-			for (auto& mesh : batman) {
-				mesh->draw(prog);
-			}
-		Model->popMatrix();
-
-		//use helper function that uses glm to create some transform matrices
-
-		Model->pushMatrix();
-			Model->translate(vec3(1.7, -0.4, -0.5));
-			Model->rotate(sTheta, vec3(0, 1, 0));
-			Model->scale(vec3(2, 1.5, 1.5));
-			Model->translate(vec3(-0.31, 0, 0.6));
-			Model->rotate(-1.6, vec3(0, 0, 1));
-			setModel(prog, Model);
-			SetMaterial(prog, 1);
-			bone->draw(prog);
-		Model->popMatrix();
-
 		//use helper function that uses glm to create some transform matrices
 		//setModel(prog, vec3(1.7, -1.7, 0), sTheta, 0, 0.3);
+		
+		if (CheckCollisionSkyBox(dog, sphere)) {
+			//cout << "colliding" << endl;
+			dog->pos = vec3(-0.2, -0.4, -0.5);
+			g_eye = vec3(0, 2, 4);
+			g_lookAt = vec3(0, 0, -4);
+			g_theta = -PI / 2;
+		    g_phi = atan(-2.0f / 8.0f);
+		}
+
 		Model->pushMatrix();
-			Model->translate(vec3(1.7, -0.4, -0.5));
-			Model->rotate(sTheta, vec3(0, 1, 0));
-			Model->scale(vec3(0.3, 0.3, 0.3));
+			Model->translate(dog->pos);
+			Model->rotate(PI, vec3(0, 1, 0));
+			Model->scale(dog->scale);
 			setModel(prog, Model);
 			SetMaterial(prog, 2);
 			dog->draw(prog);
 		Model->popMatrix();
 
+		if (CheckCollision(dog, bone)) {
+			bone->Destroyed = true;
+		}
+		
 		Model->pushMatrix();
-			Model->translate(vec3(0, -1, 4));
-			Model->rotate(3, vec3(0, 1, 0));
-			Model->scale(vec3(7, 7, 7));
+			Model->translate(bone->pos);
+			Model->rotate(PI / 2, vec3(0, 0, 1));
+			Model->scale(bone->scale);
 			setModel(prog, Model);
-			SetMaterial(prog, 4);
-			bunny->draw(prog);
+			SetMaterial(prog, 1);
+			if (!bone->Destroyed) {
+				bone->draw(prog);
+			}
 		Model->popMatrix();
+		
 
 		prog->unbind();
 
 
-		sTheta = sin(glfwGetTime());
 		// Pop matrix stacks.
 		Projection->popMatrix();
 
