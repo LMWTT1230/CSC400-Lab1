@@ -27,6 +27,8 @@ public:
 	glm::vec3 max = glm::vec3(0);
 	glm::vec3 pos = glm::vec3(0);
 	glm::vec3 scale = glm::vec3(1);
+	glm::vec3 forward = glm::vec3(0);
+	float rotX, rotY, rotZ;
 	bool Destroyed;
 
 private:

@@ -91,8 +91,8 @@ public:
 		}
 
 		const float cameraSpeed = 0.1f;
-		vec3 strafeVec = cameraSpeed * vec3(1, 0, 0);
-		vec3 dollyVec = cameraSpeed * vec3(0, 0, 1);
+		vec3 strafeVec = cameraSpeed * normalize(cross(dog->forward, vec3(0, 1, 0)));
+		vec3 dollyVec = cameraSpeed * dog->forward;
 		    if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
@@ -108,15 +108,15 @@ public:
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         {
-			dog->pos -= strafeVec;
-            g_eye -= strafeVec;
-            g_lookAt -= strafeVec;
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        {
 			dog->pos += strafeVec;
             g_eye += strafeVec;
             g_lookAt += strafeVec;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        {
+			dog->pos -= strafeVec;
+            g_eye -= strafeVec;
+            g_lookAt -= strafeVec;
         }
     }
 	}
@@ -133,8 +133,8 @@ public:
 	}
 
 	void scrollCallback(GLFWwindow* window, double deltaX, double deltaY) {
-		cout << "xDel + yDel " << deltaX << " " << deltaY << endl;
-		cout << "g_phi + g_theta " << g_phi << " " << g_theta << endl;
+		//cout << "xDel + yDel " << deltaX << " " << deltaY << endl;
+		//cout << "g_phi + g_theta " << g_phi << " " << g_theta << endl;
 
 		g_theta += PI * deltaX / 200;
 
@@ -143,11 +143,21 @@ public:
 		if (g_phi < -PI * 30 / 180) {
 			g_phi = -PI * 30 / 180;
 		}
-		else if (g_phi > atan(-2.0f / 8.0f) + PI * 10 / 180) {
-			g_phi = atan(-2.0f / 8.0f) + PI * 10 / 180;
+		else if (g_phi > atan(-2.0f / 8.0f) + PI * 5 / 180) {
+			g_phi = atan(-2.0f / 8.0f) + PI * 5 / 180;
 		}
 
-		view = -normalize(vec3(cos(g_phi) * cos(g_theta), sin(g_phi), cos(g_phi) * cos((PI / 2.0) - g_theta)));
+		float deltRotY = -PI * deltaX / 200;
+		dog->rotY += deltRotY;
+		dog->forward = vec3(cos(deltRotY) * dog->forward.x + sin(deltRotY) * dog->forward.z,
+			dog->forward.y, -sin(deltRotY) * dog->forward.x + cos(deltRotY) * dog->forward.z);
+
+		//view = -normalize(vec3(cos(g_phi) * cos(g_theta), sin(g_phi), cos(g_phi) * cos((PI / 2.0) - g_theta)));
+		vec3 relativePos = g_eye - dog->pos;
+		mat4 transform = mat4(1.0f);
+		transform = rotate(transform, deltRotY, vec3(0, 1, 0));
+		g_eye = transform * vec4(relativePos, 1.0) + vec4(dog->pos,1.0);
+
 		g_lookAt = g_eye + vec3(cos(g_phi) * cos(g_theta), sin(g_phi), cos(g_phi) * cos((PI / 2.0) - g_theta));
 	}
 
@@ -241,6 +251,8 @@ public:
 			dog->init();
 			dog->pos = vec3(-0.2, -0.4, -0.5);
 			dog->scale = vec3(0.3, 0.3, 0.3);
+			dog->rotY = PI;
+			dog->forward = vec3(0, 0, 1);
 		}
 
 		vector<tinyobj::shape_t> TOshapes2;
@@ -255,7 +267,7 @@ public:
 			sphere->createShape(TOshapes2[0]);
 			sphere->measure();
 			sphere->init();
-			sphere->scale = vec3(10.0);
+			sphere->scale = vec3(15.0);
 		}
 
 		vector<tinyobj::shape_t> TOshapes3;
@@ -530,19 +542,8 @@ public:
 		}
 
 		Model->pushMatrix();
-			Model->translate(vec3(1.7, -0.4, -0.5));
-			//Model->rotate(sTheta, vec3(0, 1, 0));
-			Model->scale(vec3(2, 1.5, 1.5));
-			Model->translate(vec3(-2, 0, -4));
-			Model->rotate(-1.6, vec3(0, 0, 1));
-			setModel(prog, Model);
-			SetMaterial(prog, 1);
-			bone->draw(prog);
-		Model->popMatrix();
-
-		Model->pushMatrix();
 			Model->translate(dog->pos);
-			Model->rotate(PI, vec3(0, 1, 0));
+			Model->rotate(dog->rotY, vec3(0, 1, 0));
 			Model->scale(dog->scale);
 			setModel(prog, Model);
 			SetMaterial(prog, 2);
