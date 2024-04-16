@@ -30,6 +30,7 @@ public:
 	glm::vec3 forward = glm::vec3(0);
 	float rotX, rotY, rotZ;
 	bool Destroyed;
+	bool Collided = true;
 
 private:
 

@@ -50,7 +50,7 @@ public:
 	shared_ptr<Shape> bone1;
 	shared_ptr<Shape> bone2;
 	shared_ptr<Shape> bone3;
-	shared_ptr<Shape> bones[4]={bone, bone1, bone2, bone3};
+	vector<shared_ptr<Shape>> bones;
 	
 
 	//global data for ground plane - direct load constant defined CPU data to GPU (not obj)
@@ -290,12 +290,13 @@ public:
 			cerr << errStr << endl;
 		}
 		else {
-			bones[0] = make_shared<Shape>();
-			bones[0]->createShape(TOshapes3[0]);
-			bones[0]->measure();
-			bones[0]->init();
-			bones[0]->pos = vec3(distr(gen), 0, distr(gen)); //4 0 3
-			bones[0]->scale = vec3(4, 3, 3);
+			bone = make_shared<Shape>();
+			bone->createShape(TOshapes3[0]);
+			bone->measure();
+			bone->init();
+			bone->pos = vec3(distr(gen), 0, distr(gen)); //4 0 3
+			bone->scale = vec3(4, 3, 3);
+			bones.push_back(bone);
 		}
 
 		vector<tinyobj::shape_t> TOshapes4;
@@ -306,12 +307,13 @@ public:
 			cerr << errStr << endl;
 		}
 		else {
-			bones[1] = make_shared<Shape>();
-			bones[1]->createShape(TOshapes4[0]);
-			bones[1]->measure();
-			bones[1]->init();
-			bones[1]->pos = vec3(distr(gen), 0, distr(gen)); //-3 0 4
-			bones[1]->scale = vec3(4, 3, 3);
+			bone1 = make_shared<Shape>();
+			bone1->createShape(TOshapes4[0]);
+			bone1->measure();
+			bone1->init();
+			bone1->pos = vec3(distr(gen), 0, distr(gen)); //-3 0 4
+			bone1->scale = vec3(4, 3, 3);
+			bones.push_back(bone1);
 		}
 
 		vector<tinyobj::shape_t> TOshapes5;
@@ -322,12 +324,13 @@ public:
 			cerr << errStr << endl;
 		}
 		else {
-			bones[2] = make_shared<Shape>();
-			bones[2]->createShape(TOshapes5[0]);
-			bones[2]->measure();
-			bones[2]->init();
-			bones[2]->pos = vec3(distr(gen), 0, distr(gen)); //2 0 -4
-			bones[2]->scale = vec3(4, 3, 3);
+			bone2 = make_shared<Shape>();
+			bone2->createShape(TOshapes5[0]);
+			bone2->measure();
+			bone2->init();
+			bone2->pos = vec3(distr(gen), 0, distr(gen)); //2 0 -4
+			bone2->scale = vec3(4, 3, 3);
+			bones.push_back(bone2);
 		}
 
 		vector<tinyobj::shape_t> TOshapes6;
@@ -338,12 +341,13 @@ public:
 			cerr << errStr << endl;
 		}
 		else {
-			bones[3] = make_shared<Shape>();
-			bones[3]->createShape(TOshapes6[0]);
-			bones[3]->measure();
-			bones[3]->init();
-			bones[3]->pos = vec3(distr(gen), 0, distr(gen)); //-4 0 -3
-			bones[3]->scale = vec3(4, 3, 3);
+			bone3 = make_shared<Shape>();
+			bone3->createShape(TOshapes6[0]);
+			bone3->measure();
+			bone3->init();
+			bone3->pos = vec3(distr(gen), 0, distr(gen)); //-4 0 -3
+			bone3->scale = vec3(4, 3, 3);
+			bones.push_back(bone3);
 		}
 
 		//code to load in the ground plane (CPU defined data passed to GPU)
@@ -531,15 +535,9 @@ public:
 
 
 	bool CheckCollisionSkyBox(shared_ptr<Shape> obj, shared_ptr<Shape> skybox) {
-		bool collisionX = obj->pos.x + obj->max.x * obj->scale.x >= skybox->pos.x + skybox->max.x * skybox->scale.x ||
-			obj->pos.x + obj->min.x * obj->scale.x <= skybox->pos.x + skybox->min.x * skybox->scale.x;
-		bool collisionY = obj->pos.y + obj->max.y * obj->scale.y >= skybox->pos.y + skybox->max.y * skybox->scale.y ||
-			obj->pos.y + obj->min.y * obj->scale.y <= skybox->pos.y + skybox->min.y * skybox->scale.y;
-		bool collisionZ = obj->pos.z + obj->max.z * obj->scale.z >= skybox->pos.z + skybox->max.z * skybox->scale.z ||
-			obj->pos.z + obj->min.z * obj->scale.z <= skybox->pos.z + skybox->min.z * skybox->scale.z;
-
-		return collisionX || collisionY || collisionZ;
+		return pow(obj->pos.x - skybox->pos.x, 2) + pow(obj->pos.y - skybox->pos.y, 2) + pow(obj->pos.z - skybox->pos.z, 2) >= pow(skybox->max.x * skybox->scale.x, 2);
 	}
+
 
 	void render(float frametime) {
 		// Get current frame buffer size.
@@ -595,6 +593,8 @@ public:
 		if (CheckCollisionSkyBox(dog, sphere)) {
 			//cout << "colliding" << endl;
 			dog->pos = vec3(-0.2, -0.4, -0.5);
+			dog->rotY = PI;
+			dog->forward = vec3(0, 0, 1);
 			g_eye = vec3(0, 2, 4);
 			g_lookAt = vec3(0, 0, -4);
 			g_theta = -PI / 2;
@@ -621,67 +621,79 @@ public:
 				setModel(prog, Model);
 				SetMaterial(prog, 1);
 				if (!bone->Destroyed) {
+					if (CheckCollisionSkyBox(bone, sphere)) {
+						
+						bone->Collided = !bone->Collided;
+						//bone->pos.x -= 1;
+					}
+
+					if (bone->Collided) {
+						bone->pos.x += frametime * 2;
+					}
+					else {
+						bone->pos.x -= frametime * 2;
+					}
 					bone->draw(prog);
 				}
 			Model->popMatrix();
 		}
-		/*if (CheckCollision(dog, bones[0])) {
-			bones[0]->Destroyed = true;
+		/*if (CheckCollision(dog, bone)) {
+			bone->Destroyed = true;
 		}
 
-		if (CheckCollision(dog, bones[1])) {
-			bones[1]->Destroyed = true;
+		if (CheckCollision(dog, bone1)) {
+			bone1->Destroyed = true;
 		}
 
-		if (CheckCollision(dog, bones[2])) {
-			bones[2]->Destroyed = true;
+		if (CheckCollision(dog, bone2)) {
+			bone2->Destroyed = true;
 		}
 
-		if (CheckCollision(dog, bones[3])) {
-			bones[3]->Destroyed = true;
+		if (CheckCollision(dog, bone3)) {
+			bone3->Destroyed = true;
 		}*/
 		
-		Model->pushMatrix();
-			Model->translate(bones[0]->pos);
-			Model->rotate(PI / 2, vec3(0, 0, 1));
-			Model->scale(bones[0]->scale);
-			setModel(prog, Model);
-			SetMaterial(prog, 1);
-			if (!bones[0]->Destroyed) {
-				bones[0]->draw(prog);
-			}
-		Model->popMatrix();
-
 		//Model->pushMatrix();
-		//	Model->translate(bones[1]->pos);
+		//	Model->translate(bone->pos);
 		//	Model->rotate(PI / 2, vec3(0, 0, 1));
-		//	Model->scale(bones[1]->scale);
+		//	Model->scale(bone->scale);
 		//	setModel(prog, Model);
 		//	SetMaterial(prog, 1);
-		//	if (!bones[1]->Destroyed) {
-		//		bones[1]->draw(prog);
+		//	if (!bone->Destroyed) {
+		//		bone->draw(prog);
 		//	}
 		//Model->popMatrix();
 
 		//Model->pushMatrix();
-		//	Model->translate(bones[2]->pos);
+		//	Model->translate(bone1->pos);
 		//	Model->rotate(PI / 2, vec3(0, 0, 1));
-		//	Model->scale(bones[2]->scale);
+		//	Model->scale(bone1->scale);
 		//	setModel(prog, Model);
 		//	SetMaterial(prog, 1);
-		//	if (!bones[2]->Destroyed) {
-		//		bones[2]->draw(prog);
+		//	if (!bone1->Destroyed) {
+		//		bone1->draw(prog);
 		//	}
 		//Model->popMatrix();
 
 		//Model->pushMatrix();
-		//	Model->translate(bones[3]->pos);
+		//	Model->translate(bone2->pos);
 		//	Model->rotate(PI / 2, vec3(0, 0, 1));
-		//	Model->scale(bones[3]->scale);
+		//	Model->scale(bone2->scale);
 		//	setModel(prog, Model);
 		//	SetMaterial(prog, 1);
-		//	if (!bones[3]->Destroyed) {
-		//		bones[3]->draw(prog);
+		//	if (!bone2->Destroyed) {
+		//		bone2->draw(prog);
+		//	}
+		//Model->popMatrix();
+
+		//Model->pushMatrix();
+		//	Model->translate(bone3->pos);
+		//	Model->rotate(PI / 2, vec3(0, 0, 1));
+		//	Model->scale(bone3->scale);
+		//	setModel(prog, Model);
+		//	SetMaterial(prog, 1);
+		//	if (!bone3->Destroyed) {
+		//		bone3->draw(prog);
 		//	}
 		//Model->popMatrix();
 		
