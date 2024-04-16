@@ -591,7 +591,22 @@ public:
 			dog->draw(prog);
 		Model->popMatrix();
 
-		if (CheckCollision(dog, bones[0])) {
+		for (auto bone : bones) {
+			if (CheckCollision(dog, bone)) {
+				bone->Destroyed = true;
+			}
+			Model->pushMatrix();
+				Model->translate(bone->pos);
+				Model->rotate(PI / 2, vec3(0, 0, 1));
+				Model->scale(bone->scale);
+				setModel(prog, Model);
+				SetMaterial(prog, 1);
+				if (!bone->Destroyed) {
+					bone->draw(prog);
+				}
+			Model->popMatrix();
+		}
+		/*if (CheckCollision(dog, bones[0])) {
 			bones[0]->Destroyed = true;
 		}
 
@@ -605,7 +620,7 @@ public:
 
 		if (CheckCollision(dog, bones[3])) {
 			bones[3]->Destroyed = true;
-		}
+		}*/
 		
 		Model->pushMatrix();
 			Model->translate(bones[0]->pos);
@@ -618,38 +633,38 @@ public:
 			}
 		Model->popMatrix();
 
-		Model->pushMatrix();
-			Model->translate(bones[1]->pos);
-			Model->rotate(PI / 2, vec3(0, 0, 1));
-			Model->scale(bones[1]->scale);
-			setModel(prog, Model);
-			SetMaterial(prog, 1);
-			if (!bones[1]->Destroyed) {
-				bones[1]->draw(prog);
-			}
-		Model->popMatrix();
+		//Model->pushMatrix();
+		//	Model->translate(bones[1]->pos);
+		//	Model->rotate(PI / 2, vec3(0, 0, 1));
+		//	Model->scale(bones[1]->scale);
+		//	setModel(prog, Model);
+		//	SetMaterial(prog, 1);
+		//	if (!bones[1]->Destroyed) {
+		//		bones[1]->draw(prog);
+		//	}
+		//Model->popMatrix();
 
-		Model->pushMatrix();
-			Model->translate(bones[2]->pos);
-			Model->rotate(PI / 2, vec3(0, 0, 1));
-			Model->scale(bones[2]->scale);
-			setModel(prog, Model);
-			SetMaterial(prog, 1);
-			if (!bones[2]->Destroyed) {
-				bones[2]->draw(prog);
-			}
-		Model->popMatrix();
+		//Model->pushMatrix();
+		//	Model->translate(bones[2]->pos);
+		//	Model->rotate(PI / 2, vec3(0, 0, 1));
+		//	Model->scale(bones[2]->scale);
+		//	setModel(prog, Model);
+		//	SetMaterial(prog, 1);
+		//	if (!bones[2]->Destroyed) {
+		//		bones[2]->draw(prog);
+		//	}
+		//Model->popMatrix();
 
-		Model->pushMatrix();
-			Model->translate(bones[3]->pos);
-			Model->rotate(PI / 2, vec3(0, 0, 1));
-			Model->scale(bones[3]->scale);
-			setModel(prog, Model);
-			SetMaterial(prog, 1);
-			if (!bones[3]->Destroyed) {
-				bones[3]->draw(prog);
-			}
-		Model->popMatrix();
+		//Model->pushMatrix();
+		//	Model->translate(bones[3]->pos);
+		//	Model->rotate(PI / 2, vec3(0, 0, 1));
+		//	Model->scale(bones[3]->scale);
+		//	setModel(prog, Model);
+		//	SetMaterial(prog, 1);
+		//	if (!bones[3]->Destroyed) {
+		//		bones[3]->draw(prog);
+		//	}
+		//Model->popMatrix();
 		
 
 		prog->unbind();
