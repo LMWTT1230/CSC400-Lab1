@@ -6,6 +6,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <stdlib.h>
+#include <random>
 
 #include "GLSL.h"
 #include "Program.h"
@@ -230,6 +231,11 @@ public:
 	void initGeom(const std::string& resourceDirectory)
 	{
 		string errStr;
+		random_device rd;  // Obtain a random number from hardware
+		mt19937 gen(rd()); // Seed the generator
+
+		// Define the range
+		uniform_int_distribution<> distr(-4, 4); // Define the range as -4 to 4
 
 		//load in another mesh and make the shape(s)
 		vector<tinyobj::shape_t> TOshapes1;
@@ -276,7 +282,7 @@ public:
 			bones[0]->createShape(TOshapes3[0]);
 			bones[0]->measure();
 			bones[0]->init();
-			bones[0]->pos = vec3(rand()%(4-(-4)+1)+-4, 0, rand()%(4-(-4)+1)+-4); //4 0 3
+			bones[0]->pos = vec3(distr(gen), 0, distr(gen)); //4 0 3
 			bones[0]->scale = vec3(4, 3, 3);
 		}
 
@@ -292,7 +298,7 @@ public:
 			bones[1]->createShape(TOshapes4[0]);
 			bones[1]->measure();
 			bones[1]->init();
-			bones[1]->pos = vec3(rand()%(4-(-4)+1)+-4, 0, rand()%(4-(-4)+1)+-4); //-3 0 4
+			bones[1]->pos = vec3(distr(gen), 0, distr(gen)); //-3 0 4
 			bones[1]->scale = vec3(4, 3, 3);
 		}
 
@@ -308,7 +314,7 @@ public:
 			bones[2]->createShape(TOshapes5[0]);
 			bones[2]->measure();
 			bones[2]->init();
-			bones[2]->pos = vec3(rand()%(4-(-4)+1)+-4, 0, rand()%(4-(-4)+1)+-4); //2 0 -4
+			bones[2]->pos = vec3(distr(gen), 0, distr(gen)); //2 0 -4
 			bones[2]->scale = vec3(4, 3, 3);
 		}
 
@@ -324,7 +330,7 @@ public:
 			bones[3]->createShape(TOshapes6[0]);
 			bones[3]->measure();
 			bones[3]->init();
-			bones[3]->pos = vec3(rand()%(4-(-4)+1)+-4, 0, rand()%(4-(-4)+1)+-4); //-4 0 -3
+			bones[3]->pos = vec3(distr(gen), 0, distr(gen)); //-4 0 -3
 			bones[3]->scale = vec3(4, 3, 3);
 		}
 
